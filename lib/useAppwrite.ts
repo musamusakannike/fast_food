@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
 
 interface UseAppwriteOptions<T, P extends Record<string, string | number>> {
@@ -22,6 +22,7 @@ const useAppwrite = <T, P extends Record<string, string | number>>({
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(!skip);
   const [error, setError] = useState<string | null>(null);
+  const paramsRef = useRef<P>(params);
 
   const fetchData = useCallback(
     async (fetchParams: P) => {
@@ -45,11 +46,17 @@ const useAppwrite = <T, P extends Record<string, string | number>>({
 
   useEffect(() => {
     if (!skip) {
-      fetchData(params);
+      fetchData(paramsRef.current);
     }
-  }, []);
+  }, [fetchData, skip]);
 
-  const refetch = async (newParams?: P) => await fetchData(newParams!);
+  // Ensure refetch has a stable identity across renders to avoid effects re-triggering
+  // in consumers that include `refetch` in dependency arrays.
+  const refetch = useCallback(async (newParams?: P) => {
+    // Prefer provided params; if none, fall back to the initial params stored in ref.
+    const effectiveParams = (newParams ?? paramsRef.current) as P;
+    await fetchData(effectiveParams);
+  }, [fetchData]);
 
   return { data, loading, error, refetch };
 };

@@ -1,9 +1,10 @@
 import { SplashScreen, Stack } from "expo-router";
 import "./global.css";
 import { useFonts } from "expo-font";
-import { useEffect } from "react";
+import { Fragment, useEffect } from "react";
 import * as Sentry from "@sentry/react-native";
 import useAuthStore from "@/store/auth.store";
+import { StatusBar } from "react-native";
 
 Sentry.init({
   dsn: "https://be6b78e9128d7f545dfef08857b9fe79@o4509330055233536.ingest.us.sentry.io/4509971773784064",
@@ -45,5 +46,10 @@ export default Sentry.wrap(function RootLayout() {
 
   if (!fontsLoaded || isLoading) return null;
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Fragment>
+      <StatusBar barStyle={"dark-content"} backgroundColor="white" animated={true} />
+      <Stack screenOptions={{ headerShown: false }} />
+    </Fragment>
+  );
 });

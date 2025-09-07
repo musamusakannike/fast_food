@@ -63,7 +63,7 @@ const Search = () => {
                 </Text>
                 <View className="flex-start flex-row gap-x-1 mt-0.5">
                   <Text className="paragraph-semibold text-dark-100">
-                    FInd your favourite food
+                    Find your favourite food
                   </Text>
                 </View>
               </View>

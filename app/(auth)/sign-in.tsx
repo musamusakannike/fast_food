@@ -24,7 +24,7 @@ const SignIn = () => {
       // Call Appwrite sign in
       await signIn({ email, password });
       Alert.alert("Success", "User signed in successfully");
-      router.replace("/");
+      router.replace("/(tabs)");
     } catch (error: any) {
       Alert.alert("Error", error.message);
       Sentry.captureEvent(error);

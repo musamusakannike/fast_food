@@ -124,3 +124,59 @@ export const getCategories = async (
     throw new Error(error as string);
   }
 };
+
+export const updateUser = async (userId: string, updates: { name?: string; email?: string }) => {
+  try {
+    // Update the user document in the database
+    const updatedUser = await databases.updateDocument(
+      appwriteConfig.databaseID!,
+      appwriteConfig.userCollectionID!,
+      userId,
+      updates
+    );
+
+    // If name is being updated, update the account name as well
+    if (updates.name) {
+      await account.updateName(updates.name);
+    }
+
+    // Note: Email updates are not automatically synced with the account
+    // because Appwrite requires current password for email changes.
+    // This only updates the user document in the database.
+    // For actual email changes, a separate flow would be needed.
+
+    return updatedUser;
+  } catch (error) {
+    throw new Error(error as string);
+  }
+};
+
+export const updateUserEmail = async (newEmail: string, currentPassword: string) => {
+  try {
+    // Update the account email first (requires password)
+    await account.updateEmail(newEmail, currentPassword);
+    
+    // Then update the user document
+    const currentUser = await getCurrentUser();
+    if (currentUser) {
+      await databases.updateDocument(
+        appwriteConfig.databaseID!,
+        appwriteConfig.userCollectionID!,
+        currentUser.$id,
+        { email: newEmail }
+      );
+    }
+    
+    return true;
+  } catch (error) {
+    throw new Error(error as string);
+  }
+};
+
+export const signOut = async () => {
+  try {
+    return await account.deleteSession("current");
+  } catch (error) {
+    throw new Error(error as string);
+  }
+};
