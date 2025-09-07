@@ -125,6 +125,47 @@ export const getCategories = async (
   }
 };
 
+export const getMenuItem = async (menuItemId: string) => {
+  try {
+    // Get the menu item
+    const menuItem = await databases.getDocument(
+      appwriteConfig.databaseID!,
+      appwriteConfig.menuCollectionID!,
+      menuItemId
+    );
+
+    // Get the menu_customizations for this item
+    const menuCustomizations = await databases.listDocuments(
+      appwriteConfig.databaseID!,
+      appwriteConfig.menuCustomizationsCollectionID!,
+      [Query.equal("menu", menuItemId)]
+    );
+
+    // Extract customization IDs
+    const customizationIds = menuCustomizations.documents.map(
+      (doc: any) => doc.customizations
+    );
+
+    // Get all customizations details
+    const customizations = [];
+    for (const id of customizationIds) {
+      const customization = await databases.getDocument(
+        appwriteConfig.databaseID!,
+        appwriteConfig.customizationsCollectionID!,
+        id
+      );
+      customizations.push(customization);
+    }
+
+    return {
+      ...menuItem,
+      availableCustomizations: customizations,
+    };
+  } catch (error) {
+    throw new Error(error as string);
+  }
+};
+
 export const updateUser = async (userId: string, updates: { name?: string; email?: string }) => {
   try {
     // Update the user document in the database

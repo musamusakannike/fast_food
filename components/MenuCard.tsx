@@ -1,15 +1,18 @@
 import { Text, TouchableOpacity, Platform } from "react-native";
 import React from "react";
 import { MenuItem } from "@/type";
-import { useCartStore } from "@/store/cart.store";
 import { Image } from "expo-image";
+import { router } from "expo-router";
 
 const MenuCard = ({
   item: { $id, name, price, image_url },
 }: {
   item: MenuItem;
 }) => {
-  const { addItem } = useCartStore();
+  const handlePress = () => {
+    router.push(`/menu/${$id}`);
+  };
+
   return (
     <TouchableOpacity
       className="menu-card"
@@ -18,6 +21,7 @@ const MenuCard = ({
           ? { elevation: 10, shadowColor: "#878787" }
           : {}
       }
+      onPress={handlePress}
     >
       <Image
         source={image_url}
@@ -34,12 +38,8 @@ const MenuCard = ({
       <Text className="body-regular text-gray-200 mb-4" numberOfLines={1}>
         From ${price}
       </Text>
-      <TouchableOpacity
-        onPress={() =>
-          addItem({ id: $id, name, price, image_url, customizations: [] })
-        }
-      >
-        <Text className="paragraph-bold text-primary">Add to Cart +</Text>
+      <TouchableOpacity onPress={handlePress}>
+        <Text className="paragraph-bold text-primary">View Details →</Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
