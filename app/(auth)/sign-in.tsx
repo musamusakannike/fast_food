@@ -4,6 +4,7 @@ import { Link, router } from "expo-router";
 import CustomInput from "@/components/CustomInput";
 import CustomButton from "@/components/CustomButton";
 import { signIn } from "@/lib/appwrite";
+import * as Sentry from "@sentry/react-native";
 
 const SignIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -13,7 +14,7 @@ const SignIn = () => {
   });
 
   const submit = async () => {
-    const {email, password} = form;
+    const { email, password } = form;
     if (!email || !password) {
       Alert.alert("Error", "Please fill all fields");
       return;
@@ -21,11 +22,12 @@ const SignIn = () => {
     setIsSubmitting(true);
     try {
       // Call Appwrite sign in
-      await signIn({email, password});
+      await signIn({ email, password });
       Alert.alert("Success", "User signed in successfully");
       router.replace("/");
     } catch (error: any) {
       Alert.alert("Error", error.message);
+      Sentry.captureEvent(error);
     } finally {
       setIsSubmitting(false);
     }
