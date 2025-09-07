@@ -1,4 +1,4 @@
-import { CreateUserParams, SignInParams } from "@/type";
+import { CreateUserParams, SignInParams, GetMenuParams, Category } from "@/type";
 import {
   Account,
   Avatars,
@@ -6,6 +6,7 @@ import {
   Databases,
   ID,
   Query,
+  Storage,
 } from "react-native-appwrite";
 
 export const appwriteConfig = {
@@ -13,7 +14,12 @@ export const appwriteConfig = {
   platform: "com.musamusakannike.fastfood",
   projectID: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID,
   databaseID: "68bbd4fb00199d4e3509",
+  bucketID: "68bd2bfa00000020a723",
   userCollectionID: "user",
+  categoriesCollectionID: "categories",
+  menuCollectionID: "menu",
+  customizationsCollectionID: "customizations",
+  menuCustomizationsCollectionID: "menu_customizations",
 };
 
 export const client = new Client();
@@ -26,6 +32,8 @@ client
 export const account = new Account(client);
 
 export const databases = new Databases(client);
+
+export const storage = new Storage(client);
 
 const avatars = new Avatars(client);
 
@@ -75,6 +83,43 @@ export const getCurrentUser = async () => {
     return currentUser.documents[0];
   } catch (error) {
     console.log(error);
+    throw new Error(error as string);
+  }
+};
+
+export const getMenu = async ({category, query, limit}: GetMenuParams) => {
+  try {
+    const queries: string[] = [];
+    if (category) queries.push(Query.equal("categories", category));
+    if (query) queries.push(Query.search("name", query));
+    if (limit) queries.push(Query.limit(limit));
+
+    const menus = await databases.listDocuments(
+      appwriteConfig.databaseID!,
+      appwriteConfig.menuCollectionID!,
+      queries
+    );
+    if (!menus) throw Error;
+
+    return menus.documents;
+  } catch (error) {
+    throw new Error(error as string);
+  }
+};
+
+
+export const getCategories = async (
+  _params?: Record<string, string | number>
+): Promise<Category[]> => {
+  try {
+    const categories = await databases.listDocuments(
+      appwriteConfig.databaseID!,
+      appwriteConfig.categoriesCollectionID!
+    );
+    if (!categories) throw Error;
+
+    return categories.documents as unknown as Category[];
+  } catch (error) {
     throw new Error(error as string);
   }
 };
