@@ -16,34 +16,37 @@ const Search = () => {
     query?: string;
     category?: string;
   }>();
-  const { data, refetch, loading } = useAppwrite({
+  const { data, refetch, loading } = useAppwrite<MenuItem[], { category: string; query: string; limit?: number }>({
     fn: getMenu,
     params: {
-      category: category || "",
-      query: query || "",
+      category: (category as string) || "",
+      query: (query as string) || "",
       limit: 6,
     },
   });
 
-  const { data: categories } = useAppwrite({
+  const { data: categories } = useAppwrite<Category[], Record<string, string | number>>({
     fn: getCategories,
   });
 
   useEffect(() => {
-    refetch({ category: category || "", query: query || "", limit: 6 });
-    console.log("categories: ",JSON.stringify(categories, null, 2));
-  }, [category, query]);
+    refetch({ category: (category as string) || "", query: (query as string) || "", limit: 6 });
+  }, [category, query, refetch]);
+
+  useEffect(() => {
+    console.log("categories: ", JSON.stringify(categories, null, 2));
+  }, [categories]);
 
   // console.log(JSON.stringify(data, null, 6));
   return (
     <SafeAreaView className="bg-white h-full">
-      <FlatList
-        data={data}
+      <FlatList<MenuItem>
+        data={data || []}
         renderItem={({ item, index }) => {
           const isFirstRightColItem = index % 2 === 0;
           return (
             <View className={cn("flex-1 max-w-[48%]", !isFirstRightColItem ? "mt-10" : "mt-0")}>
-              <MenuCard item={item as MenuItem} />
+              <MenuCard item={item} />
             </View>
           );
         }}
@@ -67,7 +70,7 @@ const Search = () => {
               <CartButton />
             </View>
             <SearchBar />
-            <Filter categories={(categories || []) as Category[]} />
+            <Filter categories={categories || []} />
           </View>
         )}
         ListEmptyComponent={() => !loading && <Text>No results found</Text>}

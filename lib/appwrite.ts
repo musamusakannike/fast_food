@@ -1,4 +1,4 @@
-import { CreateUserParams, SignInParams, GetMenuParams, Category } from "@/type";
+import { CreateUserParams, SignInParams, GetMenuParams, Category, MenuItem } from "@/type";
 import {
   Account,
   Avatars,
@@ -62,7 +62,7 @@ export const createUser = async ({
 
 export const signIn = async ({ email, password }: SignInParams) => {
   try {
-    const session = await account.createEmailPasswordSession(email, password);
+    return await account.createEmailPasswordSession(email, password);
   } catch (error) {
     throw new Error(error as string);
   }
@@ -87,7 +87,7 @@ export const getCurrentUser = async () => {
   }
 };
 
-export const getMenu = async ({category, query, limit}: GetMenuParams) => {
+export const getMenu = async ({category, query, limit}: GetMenuParams): Promise<MenuItem[]> => {
   try {
     const queries: string[] = [];
     if (category) queries.push(Query.equal("categories", category));
@@ -101,7 +101,8 @@ export const getMenu = async ({category, query, limit}: GetMenuParams) => {
     );
     if (!menus) throw Error;
 
-    return menus.documents;
+    // Appwrite SDK returns DefaultDocument[]; cast to our domain type
+    return menus.documents as unknown as MenuItem[];
   } catch (error) {
     throw new Error(error as string);
   }
